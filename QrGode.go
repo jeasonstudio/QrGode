@@ -54,38 +54,33 @@ func QrGodeInit() (QrBlock, QrBlock) {
 	return whiteBlock, blackBlock
 }
 
-// QrCodeStart 开始主程序
+// QrCodeStart Start count arr
 func QrCodeStart(whiteBlock, blackBlock QrBlock, width int, tagPathName string) {
 
 	tagQrImage, err := os.Create(tagPathName)
-
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer tagQrImage.Close()
-
 	tagImg := image.NewGray(image.Rect(0, 0, width, width))
 
 	finalArr := initResultArr(width / 10)
-
 	changeResultArr(finalArr, width/10)
-
 	printArr(finalArr, width/10)
-
-	// for x := 0; x < width; x += eachBlockLong {
-	// 	for y := 0; y < width; y += eachBlockLong {
-	// 		colorBlock(whiteBlock, x, y, tagImg)
-	// 	}
-	// }
 
 	for x := 0; x < width; x += eachBlockLong {
 		for y := 0; y < width; y += eachBlockLong {
 
 			if finalArr[x/10][y/10] == 0 {
 				colorBlock(whiteBlock, x, y, tagImg)
-			} else {
+			} else if finalArr[x/10][y/10] == 1 {
 				colorBlock(blackBlock, x, y, tagImg)
 			}
+
+			// 基准点
+			var lineColor color.Gray
+			lineColor.Y = 0
+			tagImg.SetGray(x, y, lineColor)
 			// // 基准线
 			// if x == 7*eachBlockLong || y == 7*eachBlockLong {
 			// 	colorBlock(blackBlock, x, y, tagImg)
@@ -115,16 +110,18 @@ func initResultArr(width int) [][]int {
 func changeResultArr(arr [][]int, width int) {
 	for x := 0; x < width; x++ {
 		for y := 0; y < width; y++ {
-			// 三个黑圈
 			if (y == width-2*1 || y == width-8*1) && (x >= 1 && x <= 7*1) || (x == width-2*1 || x == width-8*1) && (y >= 1 && y <= 7*1) || (x == 1 || x == 7*1) && ((y >= 1 && y <= 7*1) || (y >= width-8*1 && y <= width-2)) || (y == 1 || y == 7*1) && ((x >= 1 && x <= 7*1) || (x >= width-8*1 && x <= width-2)) {
+				// 三个黑圈 Separators for Postion Detection Patterns
 				arr[x][y] = 1
-			}
-			// 三个黑点
-			if (x >= 3 && x <= 5 && y >= 3 && y <= 5) || (x >= width-6 && x <= width-4 && y >= 3 && y <= 5) || (x >= 3 && x <= 5 && y >= width-6 && y <= width-4) {
+			} else if (x >= 3 && x <= 5 && y >= 3 && y <= 5) || (x >= width-6 && x <= width-4 && y >= 3 && y <= 5) || (x >= 3 && x <= 5 && y >= width-6 && y <= width-4) {
+				// 三个黑点 Position Detection Pattern
 				arr[x][y] = 1
-			}
-			if (x == width/2 && y == width/2) || (x == width/2 && (y == 7 || y == width-8)) || (y == width/2 && (x == 7 || x == width-8)) {
+			} else if (x == width/2 && y == width/2) || (x == width/2 && (y == 7 || y == width-8)) || (y == width/2 && (x == 7 || x == width-8)) || (x == width-8 && y == width-8) {
+				// 六个小方块 Alignment Patterns
 				drawLittleBlock(arr, x, y)
+			} else if (x == 7 && y%2 != 0) || (y == 7 && x%2 != 0) {
+				// 两条定位线 Timing Patterns
+				arr[x][y] = 1
 			}
 		}
 	}
