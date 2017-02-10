@@ -22,7 +22,7 @@ type QrBlock struct {
 func main() {
 
 	// input
-	versionNum := 5
+	versionNum := 8
 	tagPathName := "tagQrImage.png"
 	// input end
 
@@ -122,11 +122,15 @@ func changeResultArr(arr [][]int, width int) {
 			} else if (x == 7 && y%2 != 0) || (y == 7 && x%2 != 0) {
 				// 两条定位线 Timing Patterns
 				arr[x][y] = 1
+			} else if x == 9 && y == width-9 {
+				// 左下角的黑点 Dark Module
+				arr[x][y] = 1
 			}
 		}
 	}
 }
 
+// 根据中心点坐标画六个小黑点
 func drawLittleBlock(arr [][]int, x, y int) {
 	arr[x][y] = 1
 	arr[x-2][y-2] = 1
